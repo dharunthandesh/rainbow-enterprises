@@ -10,7 +10,9 @@ export default function AboutPage() {
       <section className="relative py-20 bg-muted/20 border-b border-border overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-background to-secondary/5 z-0" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
-          <h1 className="text-4xl sm:text-5xl font-black font-display tracking-tight">Our Philosophy</h1>
+          <h1 className="text-4xl sm:text-5xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Our <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Philosophy</span>
+          </h1>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-primary">Home</Link>
             <ChevronRight className="h-3.5 w-3.5" />
@@ -33,7 +35,9 @@ export default function AboutPage() {
           <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/5 px-3.5 py-1.5 rounded-full border border-primary/10 w-max block">
             Since 2015
           </span>
-          <h2 className="text-3xl font-black font-display tracking-tight">Preserving Health Through Tradition</h2>
+          <h2 className="text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Preserving Health Through <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Tradition</span>
+          </h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Rainbow Enterprises was established with a singular mission: to restore pure, wholesome nutrition to dining tables. In an era dominated by heavily refined, chemical-filled oils and adulterated food grains, we saw a vital need to return to organic agricultural traditions.
           </p>
@@ -47,7 +51,9 @@ export default function AboutPage() {
       <section className="bg-muted/30 py-16 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-black font-display tracking-tight">Our Core Pillars</h2>
+            <h2 className="text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
+              Our Core <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Pillars</span>
+            </h2>
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
               Every package of Rainbow Enterprises comes with an absolute promise of quality, sustainability, and transparency.
             </p>
@@ -100,7 +106,9 @@ export default function AboutPage() {
       {/* Sourcing Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div className="space-y-6 lg:order-2">
-          <h2 className="text-3xl font-black font-display tracking-tight">Lab Verified & Certified</h2>
+          <h2 className="text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Lab Verified & <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Certified</span>
+          </h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Quality checking is integrated at every step of our logistics chain. Our cold pressed oils, ghee, and raw honeys undergo strict testing parameters at third-party laboratories.
           </p>

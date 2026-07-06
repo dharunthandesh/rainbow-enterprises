@@ -108,7 +108,9 @@ export default function CheckoutPage() {
         </motion.div>
 
         <div className="space-y-3">
-          <h1 className="text-4xl font-black font-display tracking-tight">Order Placed Successfully!</h1>
+          <h1 className="text-4xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Order Placed <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Successfully!</span>
+          </h1>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
             Thank you for shopping with Rainbow Enterprises. Your order is being processed and will be shipped soon.
           </p>
@@ -147,7 +149,9 @@ export default function CheckoutPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Title */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-black font-display tracking-tight">Checkout</h1>
+        <h1 className="text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
+          Secure <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Checkout</span>
+        </h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/shop" className="hover:text-primary">Store</Link>
           <ChevronRight className="h-3.5 w-3.5" />

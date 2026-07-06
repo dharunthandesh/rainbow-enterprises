@@ -127,7 +127,9 @@ export default function WellnessPage() {
             <Activity className="h-3.5 w-3.5" />
             Discover Products Sourced For Wellness Goals
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black font-display tracking-tight">Wellness & Lifestyle</h1>
+          <h1 className="text-4xl sm:text-5xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Wellness & <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Lifestyle</span>
+          </h1>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
             Select your personal wellness focus area to discover nature's best remedies and dietary guides.
           </p>
@@ -173,8 +175,8 @@ export default function WellnessPage() {
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${activeGoal.color}`}>
                 <GoalIcon className="h-6 w-6" />
               </div>
-              <h2 className="text-2xl font-black font-display tracking-tight">
-                {activeGoal.name} Lifestyle Guide
+              <h2 className="text-2xl font-brand font-black text-[#1e3b26] tracking-tight">
+                {activeGoal.name} <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Lifestyle Guide</span>
               </h2>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed">

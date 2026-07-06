@@ -123,13 +123,9 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-border mt-16 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+        <div className="border-t border-border mt-16 pt-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} Rainbow Enterprises. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-primary transition-colors">Shipping & Returns</a>
-          </div>
+          <p className="text-sm font-medium">Developed by <span className="font-black text-[#b08953] tracking-wide">TRIYO</span></p>
         </div>
       </div>
     </footer>

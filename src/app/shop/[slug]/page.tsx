@@ -60,7 +60,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <span className="text-xs font-bold text-primary uppercase tracking-widest block bg-primary/5 border border-primary/10 rounded-full px-3 py-1 w-max">
               {product.weight} Pack
             </span>
-            <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-brand font-black text-[#1e3b26] tracking-tight">
               {product.name}
             </h1>
             
@@ -182,7 +182,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <section className="space-y-8 pt-6 border-t border-border">
-          <h2 className="text-2xl font-black font-display tracking-tight">Related Products</h2>
+          <h2 className="text-2xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Related <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Products</span>
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {relatedProducts.map((p) => (
               <ProductCard key={p.id} product={p} />

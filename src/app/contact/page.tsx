@@ -64,7 +64,9 @@ export default function ContactPage() {
       <section className="relative py-20 bg-muted/20 border-b border-border overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-background to-secondary/5 z-0" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
-          <h1 className="text-4xl sm:text-5xl font-black font-display tracking-tight">Contact Us</h1>
+          <h1 className="text-4xl sm:text-5xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Contact <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Us</span>
+          </h1>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-primary">Home</Link>
             <ChevronRight className="h-3.5 w-3.5" />
@@ -78,7 +80,9 @@ export default function ContactPage() {
         {/* Contact Info Sidebar */}
         <div className="lg:col-span-5 space-y-8">
           <div className="space-y-4">
-            <h2 className="text-3xl font-black font-display tracking-tight">Get In Touch</h2>
+            <h2 className="text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
+              Get In <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Touch</span>
+            </h2>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Have questions about our cold-pressed oil extractions, honey collection, or wholesale requirements? Drop us a message, call, or visit our retail store.
             </p>

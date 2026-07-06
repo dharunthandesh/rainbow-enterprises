@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
-import { getCategories, mockProducts } from '@/lib/mockData';
+import { getCategories, mockCategories, mockProducts } from '@/lib/mockData';
 import { Product } from '@/lib/supabase';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { Button } from '@/components/ui/button';
@@ -11,19 +11,18 @@ import { Button } from '@/components/ui/button';
 function ShopContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [categories, setCategories] = useState<any[]>([]);
+  // Initialize directly from sync mock — instant render, no async delay
+  const [categories, setCategories] = useState<any[]>(mockCategories);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
   const [products, setProducts] = useState<Product[]>(mockProducts);
 
-  // Initialize categories
+  // Background sync from Supabase (if configured) — updates silently after first paint
   useEffect(() => {
-    async function loadCategories() {
-      const cats = await getCategories();
-      setCategories(cats);
-    }
-    loadCategories();
+    getCategories().then((cats) => {
+      if (cats && cats.length > 0) setCategories(cats);
+    });
   }, []);
 
   // Update selected category based on searchParams url ?category=oils-ghee
@@ -100,7 +99,9 @@ function ShopContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Banner / Title */}
       <div className="text-center space-y-3 py-6 bg-muted/20 rounded-3xl border border-border">
-        <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight">Our Organic Store</h1>
+        <h1 className="text-3xl sm:text-4xl font-brand font-black text-[#1e3b26] tracking-tight">
+          Our Organic <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Store</span>
+        </h1>
         <p className="text-muted-foreground text-sm max-w-md mx-auto">
           Explore our complete catalog of certified organic foods, direct from local farms.
         </p>

@@ -124,7 +124,9 @@ export default function FoodLabPage() {
             <Sparkles className="h-3.5 w-3.5" />
             Learn The Science Of Traditional Foods
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black font-display tracking-tight">Food Laboratory</h1>
+          <h1 className="text-4xl sm:text-5xl font-brand font-black text-[#1e3b26] tracking-tight">
+            Food <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Laboratory</span>
+          </h1>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
             Discover the nutritional profiles, test parameters, and farm origins of what you eat.
           </p>
@@ -134,9 +136,9 @@ export default function FoodLabPage() {
       {/* Ingredient Explorer */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         <div className="text-center md:text-left space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-black font-display tracking-tight flex items-center justify-center md:justify-start gap-2">
-            <Leaf className="h-7 w-7 text-primary" />
-            Ingredient Explorer
+          <h2 className="text-2xl sm:text-3xl font-brand font-black text-[#1e3b26] tracking-tight flex items-center justify-center md:justify-start gap-2">
+            <Leaf className="h-7 w-7 text-[#1e3b26]" />
+            Ingredient <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Explorer</span>
           </h2>
           <p className="text-muted-foreground text-sm max-w-md">
             Click on an ingredient to trace its origin and inspect its visual nutritional properties.
@@ -166,7 +168,7 @@ export default function FoodLabPage() {
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full filter blur-xl pointer-events-none" />
 
             <div className="space-y-4">
-              <h3 className="text-2xl font-black font-display tracking-tight text-primary">
+              <h3 className="text-2xl font-brand font-bold tracking-tight text-[#1e3b26]">
                 {activeIngredient.name}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
@@ -221,9 +223,9 @@ export default function FoodLabPage() {
       <section className="bg-muted/30 py-16 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center space-y-3">
-            <h2 className="text-2xl sm:text-3xl font-black font-display tracking-tight flex items-center justify-center gap-2">
-              <HelpCircle className="h-7 w-7 text-primary" />
-              Myth vs Fact
+            <h2 className="text-2xl sm:text-3xl font-brand font-black text-[#1e3b26] tracking-tight flex items-center justify-center gap-2">
+              <HelpCircle className="h-7 w-7 text-[#1e3b26]" />
+              Myth vs <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Fact</span>
             </h2>
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
               Click on the cards to flip them and uncover the laboratory-proven truth about traditional organic foods.
@@ -239,7 +241,7 @@ export default function FoodLabPage() {
                   onClick={() => toggleMythFlip(idx)}
                   className="h-72 cursor-pointer group relative perspective"
                 >
-                  <div className={`relative w-full h-full duration-500 transform-style-3d ${
+                  <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
                     isFlipped ? 'rotate-y-180' : ''
                   }`}>
                     {/* Front: Myth */}
@@ -282,9 +284,9 @@ export default function FoodLabPage() {
       {/* Compare Foods */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-3xl font-black font-display tracking-tight flex items-center justify-center gap-2">
-            <Scale className="h-7 w-7 text-primary" />
-            Food Comparison Tool
+          <h2 className="text-2xl sm:text-3xl font-brand font-black text-[#1e3b26] tracking-tight flex items-center justify-center gap-2">
+            <Scale className="h-7 w-7 text-[#1e3b26]" />
+            Food Comparison <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Tool</span>
           </h2>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
             Direct nutrient comparisons between refined foods and traditional wholesome organic foods.

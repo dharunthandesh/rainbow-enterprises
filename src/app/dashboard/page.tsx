@@ -88,7 +88,9 @@ export default function DashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Title */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-black font-display tracking-tight">Your Dashboard</h1>
+        <h1 className="text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
+          Your <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Dashboard</span>
+        </h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-primary">Home</Link>
           <ChevronRight className="h-3.5 w-3.5" />
