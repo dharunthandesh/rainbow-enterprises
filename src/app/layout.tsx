@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
 import { ToastContainer } from '@/components/ui/toast-container';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import { SiteShell } from '@/components/layout/SiteShell';
 
 // Static variables to support offline builds, fonts will load via standard browser link tags
 const outfit = { variable: 'font-outfit' };
@@ -29,10 +29,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-full font-sans bg-background text-foreground flex flex-col antialiased">
-        <Navbar />
-        <main className="flex-grow pt-24">{children}</main>
-        <Footer />
-        <ToastContainer />
+        <AuthProvider>
+          <SiteShell>
+            {children}
+          </SiteShell>
+          <ToastContainer />
+        </AuthProvider>
       </body>
     </html>
   );

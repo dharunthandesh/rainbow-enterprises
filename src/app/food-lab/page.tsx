@@ -147,12 +147,12 @@ export default function FoodLabPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* List panel */}
-          <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2.5 overflow-x-auto pb-3 lg:pb-0">
+          <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2.5 overflow-x-auto pb-3 lg:pb-0 select-none">
             {ingredients.map((ing) => (
               <button
                 key={ing.id}
                 onClick={() => setActiveIngredient(ing)}
-                className={`w-full text-left p-4 rounded-xl border font-bold text-sm transition-all duration-300 ${
+                className={`flex-shrink-0 w-auto lg:w-full text-center lg:text-left p-4 rounded-xl border font-bold text-sm transition-all duration-300 whitespace-nowrap lg:whitespace-normal cursor-pointer ${
                   activeIngredient.id === ing.id
                     ? 'bg-primary text-primary-foreground border-primary shadow-md'
                     : 'bg-card border-border hover:border-primary/30 text-foreground'

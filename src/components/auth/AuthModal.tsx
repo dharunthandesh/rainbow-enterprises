@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -8,15 +9,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { useAuth } from '@/store/useAuth';
 import { useToast } from '@/hooks/use-toast'; // We will create this toast hooks shortly
 
-const authSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').optional(),
+const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type AuthFormValues = z.infer<typeof authSchema>;
+const signupSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type AuthFormValues = {
+  name?: string;
+  email: string;
+  password: string;
+};
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -28,6 +39,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const {
     register,
@@ -35,7 +47,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     reset,
     formState: { errors },
   } = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
+    resolver: (values, context, options) => {
+      const schema = mode === 'login' ? loginSchema : signupSchema;
+      return zodResolver(schema)(values, context, options);
+    },
     defaultValues: {
       name: '',
       email: '',
@@ -43,46 +58,30 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     },
   });
 
+  const { login, signup } = useAuth();
+
   const onSubmit = async (values: AuthFormValues) => {
     setIsLoading(true);
     try {
-      if (isSupabaseConfigured) {
-        if (mode === 'signup') {
-          const { error } = await supabase.auth.signUp({
-            email: values.email,
-            password: values.password,
-            options: {
-              data: {
-                full_name: values.name,
-              },
-            },
-          });
-          if (error) throw error;
-          toast({
-            title: 'Sign Up Successful!',
-            description: 'Check your email for confirmation.',
-          });
-        } else {
-          const { error } = await supabase.auth.signInWithPassword({
-            email: values.email,
-            password: values.password,
-          });
-          if (error) throw error;
-          toast({
-            title: 'Welcome Back!',
-            description: 'Successfully logged in.',
-          });
-        }
-        onClose();
-      } else {
-        // Mock authentication flow
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (mode === 'signup') {
+        await signup(values.name || '', values.email, values.password);
         toast({
-          title: mode === 'signup' ? 'Account Created (Mock Mode)' : 'Logged In (Mock Mode)',
-          description: `Hello, ${values.name || values.email}! Note: Supabase is not configured yet.`,
+          title: isSupabaseConfigured ? 'Sign Up Successful!' : 'Account Created (Mock Mode)',
+          description: isSupabaseConfigured
+            ? 'Check your email for confirmation.'
+            : `Welcome, ${values.name || values.email}! Your mock account has been created.`,
         });
-        onClose();
+      } else {
+        const loggedInUser = await login(values.email, values.password);
+        toast({
+          title: isSupabaseConfigured ? 'Welcome Back!' : 'Logged In (Mock Mode)',
+          description: 'Successfully logged in.',
+        });
+        if (loggedInUser?.isAdmin) {
+          router.push('/admin/dashboard');
+        }
       }
+      onClose();
       reset();
     } catch (error: any) {
       toast({

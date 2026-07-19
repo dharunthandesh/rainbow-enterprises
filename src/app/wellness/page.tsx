@@ -13,8 +13,7 @@ import {
   Flame, 
   Search,
   ChevronRight,
-  TrendingDown,
-  ChevronDown
+  TrendingDown
 } from 'lucide-react';
 import { mockProducts } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';

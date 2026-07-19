@@ -103,19 +103,19 @@ export function Footer() {
               <li className="flex gap-3">
                 <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <span className="text-muted-foreground leading-relaxed">
-                  123 Organic Lane, Green Field, Chennai, Tamil Nadu - 600001
+                  S2, Second Floor, Vandikaran Street,<br />West Mambalam, Chennai – 600033
                 </span>
               </li>
               <li className="flex gap-3 items-center">
                 <Phone className="h-5 w-5 text-primary flex-shrink-0" />
                 <span className="text-muted-foreground hover:text-primary transition-colors">
-                  +91 98765 43210
+                  +91 91760 88989
                 </span>
               </li>
               <li className="flex gap-3 items-center">
                 <Mail className="h-5 w-5 text-primary flex-shrink-0" />
                 <span className="text-muted-foreground hover:text-primary transition-colors">
-                  info@rainbowenterprises.com
+                  raiinbow27@gmail.com
                 </span>
               </li>
             </ul>

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { MapPlaceholder } from '@/components/ui/MapPlaceholder';
+import { StoreMap } from '@/components/ui/StoreMap';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -95,7 +95,7 @@ export default function ContactPage() {
               </div>
               <div className="space-y-0.5">
                 <h4 className="font-bold text-sm">Call Us</h4>
-                <p className="text-sm text-muted-foreground">+91 98765 43210</p>
+                <p className="text-sm text-muted-foreground">+91 91760 88989</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Mon - Sat: 9:00 AM - 7:00 PM</p>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function ContactPage() {
               </div>
               <div className="space-y-0.5">
                 <h4 className="font-bold text-sm">Email Support</h4>
-                <p className="text-sm text-muted-foreground">info@rainbowenterprises.com</p>
+                <p className="text-sm text-muted-foreground">raiinbow27@gmail.com</p>
                 <p className="text-xs text-muted-foreground mt-0.5">We reply in 24 business hours.</p>
               </div>
             </div>
@@ -118,8 +118,16 @@ export default function ContactPage() {
               <div className="space-y-0.5">
                 <h4 className="font-bold text-sm">Main Office & Store</h4>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  123 Organic Lane, Green Field, Chennai, Tamil Nadu - 600001
+                  S2, Second Floor, Vandikaran Street,<br />West Mambalam, Chennai – 600033
                 </p>
+                <a
+                  href="https://www.google.com/maps/place/Harith+Garden+And+Pest+Clinic/@13.0308828,80.2240753,17z"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-primary hover:underline mt-1 inline-block"
+                >
+                  View on Google Maps →
+                </a>
               </div>
             </div>
 
@@ -204,8 +212,10 @@ export default function ContactPage() {
 
       {/* Map Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <h3 className="font-bold text-lg text-center lg:text-left">Find Us on Google Maps</h3>
-        <MapPlaceholder />
+        <h3 className="font-brand font-black text-2xl text-[#1e3b26] text-center lg:text-left">
+          Find Us on <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Google Maps</span>
+        </h3>
+        <StoreMap height={450} showInfoBar />
       </section>
     </div>
   );

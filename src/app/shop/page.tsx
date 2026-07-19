@@ -151,11 +151,11 @@ function ShopContent() {
               <SlidersHorizontal className="h-4.5 w-4.5 text-primary" />
               <h3 className="font-bold text-sm uppercase tracking-wider">Categories</h3>
             </div>
-            <div className="flex flex-row lg:flex-col flex-wrap gap-2 overflow-x-auto pb-2 lg:pb-0">
+            <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0 select-none scrollbar-none">
               <Button
                 variant={selectedCategory === 'all' ? 'default' : 'ghost'}
                 onClick={() => handleCategorySelect('all')}
-                className="justify-start rounded-xl text-sm font-bold w-auto lg:w-full py-5"
+                className="justify-start rounded-xl text-sm font-bold flex-shrink-0 w-auto lg:w-full py-5 whitespace-nowrap lg:whitespace-normal"
               >
                 All Products
               </Button>
@@ -164,7 +164,7 @@ function ShopContent() {
                   key={cat.id}
                   variant={selectedCategory === cat.slug ? 'default' : 'ghost'}
                   onClick={() => handleCategorySelect(cat.slug)}
-                  className="justify-start rounded-xl text-sm font-bold w-auto lg:w-full py-5"
+                  className="justify-start rounded-xl text-sm font-bold flex-shrink-0 w-auto lg:w-full py-5 whitespace-nowrap lg:whitespace-normal"
                 >
                   {cat.name}
                 </Button>

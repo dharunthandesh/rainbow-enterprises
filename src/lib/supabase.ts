@@ -7,7 +7,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 export const isSupabaseConfigured = 
   supabaseUrl && 
   supabaseAnonKey && 
-  !supabaseUrl.includes('your-project-id');
+  !supabaseUrl.includes('your-project-id') &&
+  (supabaseAnonKey.startsWith('eyJ') || supabaseAnonKey.startsWith('sb_publishable_'));
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

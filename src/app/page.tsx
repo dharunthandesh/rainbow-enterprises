@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { getProducts } from '@/lib/mockData';
 import { ProductCard } from '@/components/shop/ProductCard';
-import { MapPlaceholder } from '@/components/ui/MapPlaceholder';
+import { StoreMap } from '@/components/ui/StoreMap';
 
 export default async function Home() {
   const featuredProducts = await getProducts(undefined, true);
@@ -55,10 +55,10 @@ export default async function Home() {
           />
         </div>
         {/* Hero Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto w-full pl-3 pr-6 sm:pl-4 sm:pr-8 py-24 md:py-32 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-24 md:py-32 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
           {/* Left Column: Headline and Badges */}
-          <div className="space-y-8 max-w-xl pr-20 sm:pr-32 lg:pr-0 -ml-2 sm:-ml-4 lg:ml-0 relative lg:-left-[10%] z-20">
+          <div className="space-y-8 max-w-xl pr-0 relative lg:-left-[10%] z-20">
             {/* Headline */}
             <h1 className="font-brand font-black text-[#1e3b26] leading-[1.08] tracking-tight text-5xl sm:text-6xl md:text-7xl">
               Tradition<br />
@@ -86,7 +86,7 @@ export default async function Home() {
           </div>
 
           {/* Right Column: Stacked Info Cards */}
-          <div className="flex flex-col gap-5 w-full max-w-[330px] ml-auto relative lg:-top-48 lg:-right-[22%] z-20">
+          <div className="flex flex-col gap-5 w-full max-w-[330px] mx-auto lg:ml-auto lg:mr-0 relative lg:-top-48 lg:-right-[22%] z-20">
             {/* Video / Tradition Card */}
             <div className="bg-[#f0e6d3] border border-[#d9c9b0] shadow-lg rounded-[1.75rem] p-4 flex items-center gap-4 w-full">
               <div className="relative flex-shrink-0 rounded-xl overflow-hidden w-20 h-14 bg-amber-50">
@@ -265,14 +265,19 @@ export default async function Home() {
       </section>
 
       {/* ═══════════════ MAP ═══════════════ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-8">
-        <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
-            Visit Our <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Store</span>
-          </h2>
-          <p className="text-[#1e3b26]/52 text-sm max-w-md mx-auto">Experience the full organic range in person at our Chennai store.</p>
+      <section className="py-16 bg-[#f4ece0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="text-center space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#b08953]">Find Us</p>
+            <h2 className="text-2xl sm:text-3xl font-brand font-black text-[#1e3b26] tracking-tight">
+              Visit Our <span className="font-serif-elegant italic font-normal text-[#b08953] tracking-normal">Store</span>
+            </h2>
+            <p className="text-[#1e3b26]/55 text-sm max-w-md mx-auto leading-relaxed">
+              Experience our full organic range in person. Visit us at West Mambalam, Chennai – 600033.
+            </p>
+          </div>
+          <StoreMap height={460} showInfoBar />
         </div>
-        <MapPlaceholder />
       </section>
     </div>
   );

@@ -11,8 +11,6 @@ interface ProductImageGalleryProps {
 export function ProductImageGallery({ images, name }: ProductImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const activeImage = images[activeIndex] || '';
-
   const handleNext = () => {
     setActiveIndex((prev) => (prev + 1) % images.length);
   };

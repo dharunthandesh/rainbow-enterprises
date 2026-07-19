@@ -30,11 +30,13 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
   const [isHovering, setIsHovering] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    // Find matching variant if the product changes
+  // Sync state with prop product changes during render
+  const [prevProductId, setPrevProductId] = useState(product.id);
+  if (product.id !== prevProductId) {
+    setPrevProductId(product.id);
     const matchingVariant = allVariants.find(v => v.id === product.id) || allVariants[0] || product;
     setActiveVariant(matchingVariant);
-  }, [product]);
+  }
 
   // Cycle through images on hover
   useEffect(() => {
@@ -45,7 +47,9 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
       }, 800);
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      setHoveredImageIndex(0);
+      setTimeout(() => {
+        setHoveredImageIndex(0);
+      }, 0);
     }
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -54,7 +58,9 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
 
   // Reset image index when variant changes
   useEffect(() => {
-    setHoveredImageIndex(0);
+    setTimeout(() => {
+      setHoveredImageIndex(0);
+    }, 0);
   }, [activeVariant]);
 
   const handleAddToCart = (e: React.MouseEvent) => {

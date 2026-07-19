@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -14,11 +15,14 @@ import {
   Calendar,
   CheckCircle,
   Truck,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 import { mockProducts } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/store/useAuth';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 // Mock orders data
 const mockOrders = [
@@ -45,15 +49,37 @@ const mockOrders = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'wishlist' | 'addresses'>('orders');
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const { toast } = useToast();
+  const { user, isInitialized, logout, updateProfile } = useAuth();
+  const router = useRouter();
+
+  // Redirect admin users to the admin dashboard
+  useEffect(() => {
+    if (isInitialized && user?.isAdmin) {
+      router.replace('/admin/dashboard');
+    }
+  }, [user, isInitialized, router]);
   
   // Profile state
   const [profile, setProfile] = useState({
-    name: 'Amit Sharma',
-    email: 'amit.sharma@example.com',
-    phone: '+91 98765 98765',
-    memberSince: 'January 2026'
+    name: '',
+    email: '',
+    phone: '',
+    memberSince: ''
   });
+
+  // Sync profile settings with user session state
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        memberSince: user.memberSince || 'January 2026'
+      });
+    }
+  }, [user]);
 
   // Addresses state
   const [addresses, setAddresses] = useState([
@@ -69,12 +95,24 @@ export default function DashboardPage() {
     }
   ]);
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: 'Profile Updated',
-      description: 'Your account details have been saved successfully.',
-    });
+    try {
+      await updateProfile({
+        name: profile.name,
+        phone: profile.phone,
+      });
+      toast({
+        title: 'Profile Updated',
+        description: 'Your account details have been saved successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Profile Update Error',
+        description: error.message || 'Something went wrong.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleAddAddress = () => {
@@ -83,6 +121,40 @@ export default function DashboardPage() {
       description: 'Address management dialog opened (Simulated).',
     });
   };
+
+  // 1. Loading State
+  if (!isInitialized) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-sm font-semibold text-muted-foreground">Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated State
+  if (!user) {
+    return (
+      <div className="max-w-md mx-auto px-6 py-24 text-center space-y-6">
+        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
+          <User className="h-10 w-10" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold tracking-tight text-[#1e3b26]">Dashboard Access</h2>
+          <p className="text-muted-foreground text-sm">
+            Please sign in or create a new account to view your dashboard, check your order history, and update settings.
+          </p>
+        </div>
+        <Button 
+          onClick={() => setIsAuthOpen(true)} 
+          className="w-full bg-primary hover:bg-primary/95 text-primary-foreground py-6 rounded-xl font-bold mt-4 shadow-sm"
+        >
+          Sign In / Create Account
+        </Button>
+        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -104,8 +176,10 @@ export default function DashboardPage() {
         <div className="lg:col-span-1 bg-card border border-border rounded-2xl p-5 shadow-sm space-y-2">
           {/* User profile card */}
           <div className="flex items-center gap-3 p-3 border-b border-border pb-4 mb-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg">
-              AS
+            <div className="w-12 h-12 rounded-full bg-[#1e3b26]/10 flex items-center justify-center text-[#1e3b26] font-black text-lg">
+              {profile.name
+                ? profile.name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join('').toUpperCase()
+                : 'U'}
             </div>
             <div>
               <h3 className="font-bold text-sm leading-snug">{profile.name}</h3>
@@ -161,10 +235,13 @@ export default function DashboardPage() {
             Profile Settings
           </button>
 
-          <Link href="/">
+          <Link href="/" style={{ textDecoration: 'none' }}>
             <button
-              onClick={() => toast({ title: 'Logged Out', description: 'Session ended.' })}
-              className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm text-destructive hover:bg-destructive/10 transition-all mt-4 border-t border-border pt-4"
+              onClick={async () => {
+                await logout();
+                toast({ title: 'Logged Out', description: 'Session ended successfully.' });
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm text-destructive hover:bg-destructive/10 transition-all mt-4 border-t border-border pt-4 border-none bg-transparent cursor-pointer text-left"
             >
               <LogOut className="h-4.5 w-4.5" />
               Sign Out
