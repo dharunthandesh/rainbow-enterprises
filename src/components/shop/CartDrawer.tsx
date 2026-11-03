@@ -152,11 +152,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                 <div className="flex flex-col gap-2">
                   <Link href="/checkout" onClick={onClose} className="w-full">
-                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 rounded-xl">
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6 rounded-xl shadow-md">
                       Proceed to Checkout
                     </Button>
                   </Link>
-                  <Button variant="ghost" onClick={onClose} className="w-full text-sm">
+                  <Link href="/cart" onClick={onClose} className="w-full">
+                    <Button variant="outline" className="w-full border-border hover:bg-muted font-bold py-5 rounded-xl text-xs">
+                      View Full Cart Page
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" onClick={onClose} className="w-full text-xs text-muted-foreground">
                     Continue Shopping
                   </Button>
                 </div>

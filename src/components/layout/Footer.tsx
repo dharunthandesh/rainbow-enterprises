@@ -2,26 +2,33 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, Truck, ShieldCheck, Heart } from 'lucide-react';
 
 export function Footer() {
   return (
     <footer className="bg-muted/30 border-t border-border mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand & Description */}
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+          {/* Brand & Description (Col 1 & 2 on lg) */}
+          <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-2 group">
-              <span className="text-2xl font-black tracking-wider bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
+              <span className="text-2xl font-black tracking-wider bg-gradient-to-r from-primary via-[#b08953] to-primary bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
                 RAINBOW
               </span>
               <span className="text-xs font-bold text-muted-foreground tracking-widest uppercase border-l border-border pl-2">
                 Enterprises
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Bringing you nature's finest selection of organic products. Sourced directly from local farmers using traditional cold-pressed and chemical-free methods.
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+              Bringing you nature&apos;s finest selection of organic products. Sourced directly from local farmers using traditional cold-pressed (vagai mara chekku) and chemical-free methods.
             </p>
+
+            {/* Trust badge */}
+            <div className="flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 px-3.5 py-2 rounded-xl w-fit">
+              <ShieldCheck className="h-4 w-4" />
+              100% Authentic Organic RootsVeyr Products
+            </div>
+
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
               <a href="#" aria-label="Facebook" className="w-9 h-9 bg-primary/5 hover:bg-primary hover:text-primary-foreground rounded-full flex items-center justify-center transition-all duration-300 text-foreground">
@@ -44,8 +51,8 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-bold text-sm uppercase tracking-wider mb-6">Quick Links</h3>
-            <ul className="space-y-3.5 text-sm">
+            <h3 className="font-bold text-sm uppercase tracking-wider mb-5">Explore</h3>
+            <ul className="space-y-3 text-sm">
               <li>
                 <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
                   Home
@@ -53,44 +60,64 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/shop" className="text-muted-foreground hover:text-primary transition-colors">
-                  Shop Products
+                  Shop All Products
+                </Link>
+              </li>
+              <li>
+                <Link href="/cart" className="text-muted-foreground hover:text-primary transition-colors">
+                  My Cart
+                </Link>
+              </li>
+              <li>
+                <Link href="/track-order" className="text-muted-foreground hover:text-primary transition-colors">
+                  Track Order
+                </Link>
+              </li>
+              <li>
+                <Link href="/food-lab" className="text-muted-foreground hover:text-primary transition-colors">
+                  Food Lab
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact
+                  Our Story
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Customer Care & Policies */}
           <div>
-            <h3 className="font-bold text-sm uppercase tracking-wider mb-6">Categories</h3>
-            <ul className="space-y-3.5 text-sm">
+            <h3 className="font-bold text-sm uppercase tracking-wider mb-5">Customer Care</h3>
+            <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/shop?category=oils-ghee" className="text-muted-foreground hover:text-primary transition-colors">
-                  Oils & Ghee
+                <Link href="/faq" className="text-muted-foreground hover:text-primary transition-colors">
+                  Help & FAQs
                 </Link>
               </li>
               <li>
-                <Link href="/shop?category=millets-pulses" className="text-muted-foreground hover:text-primary transition-colors">
-                  Millets & Pulses
+                <Link href="/shipping-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                  Shipping & Delivery
                 </Link>
               </li>
               <li>
-                <Link href="/shop?category=honey-sweeteners" className="text-muted-foreground hover:text-primary transition-colors">
-                  Honey & Sweeteners
+                <Link href="/returns-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                  Returns & Refunds
                 </Link>
               </li>
               <li>
-                <Link href="/shop?category=snacks-nuts" className="text-muted-foreground hover:text-primary transition-colors">
-                  Snacks & Nuts
+                <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
+                  Contact Support
                 </Link>
               </li>
             </ul>
@@ -98,7 +125,7 @@ export function Footer() {
 
           {/* Contact Details */}
           <div>
-            <h3 className="font-bold text-sm uppercase tracking-wider mb-6">Contact Us</h3>
+            <h3 className="font-bold text-sm uppercase tracking-wider mb-5">Visit & Contact</h3>
             <ul className="space-y-4 text-sm">
               <li className="flex gap-3">
                 <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -123,9 +150,18 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-border mt-16 pt-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
+        <div className="border-t border-border mt-14 pt-8 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} Rainbow Enterprises. All rights reserved.</p>
-          <p className="text-sm font-medium">Developed by <span className="font-black text-[#b08953] tracking-wide">TRIYO</span></p>
+          <div className="flex items-center gap-4 text-xs">
+            <Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy</Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <span>•</span>
+            <Link href="/shipping-policy" className="hover:text-primary transition-colors">Shipping</Link>
+            <span>•</span>
+            <Link href="/faq" className="hover:text-primary transition-colors">FAQs</Link>
+          </div>
+          <p className="text-xs font-medium">Developed by <span className="font-black text-[#b08953] tracking-wide">TRIYO</span></p>
         </div>
       </div>
     </footer>

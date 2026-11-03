@@ -5,12 +5,15 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Fallback to client-side mocks if keys are not configured or are placeholder keys
 export const isSupabaseConfigured = 
-  supabaseUrl && 
-  supabaseAnonKey && 
+  !!supabaseUrl && 
+  !!supabaseAnonKey && 
   !supabaseUrl.includes('your-project-id') &&
   (supabaseAnonKey.startsWith('eyJ') || supabaseAnonKey.startsWith('sb_publishable_'));
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  isSupabaseConfigured ? supabaseUrl : 'https://placeholder-project-id.supabase.co',
+  isSupabaseConfigured ? supabaseAnonKey : 'placeholder-anon-key'
+);
 
 export interface Product {
   id: string;

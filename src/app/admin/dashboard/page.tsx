@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -26,9 +27,22 @@ import {
   Ban,
   RefreshCw,
   Eye,
+  Download,
+  Printer,
+  Plus,
+  Trash2,
+  Tag,
+  Percent,
+  Check,
+  AlertTriangle,
+  Edit,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '@/store/useAuth';
 import { useAdminOrders, Order } from '@/store/useAdminOrders';
+import { mockProducts, mockCategories } from '@/lib/mockData';
+import { Product } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -70,7 +84,7 @@ function MetricCard({ title, value, icon: Icon, color, sub }: { title: string; v
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: Order['status'] }) {
-  const cfg = STATUS_CONFIG[status];
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.New;
   const Icon = cfg.icon;
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${cfg.color}`}>
@@ -80,13 +94,22 @@ function StatusBadge({ status }: { status: Order['status'] }) {
   );
 }
 
+// ─── Coupon Interface ─────────────────────────────────────────────────────────
+interface Coupon {
+  code: string;
+  type: 'percent' | 'flat';
+  value: number;
+  minOrder: number;
+  isActive: boolean;
+}
+
 // ─── Order Detail Drawer ──────────────────────────────────────────────────────
 function OrderDetailDrawer({ order, onClose, onStatusUpdate }: {
   order: Order;
   onClose: () => void;
   onStatusUpdate: (id: string, status: Order['status']) => void;
 }) {
-  const cfg = STATUS_CONFIG[order.status];
+  const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.New;
   const currentStep = STATUS_FLOW.indexOf(order.status);
   const [updating, setUpdating] = useState(false);
 
@@ -102,6 +125,10 @@ function OrderDetailDrawer({ order, onClose, onStatusUpdate }: {
     setUpdating(true);
     await onStatusUpdate(order.id, 'Cancelled');
     setUpdating(false);
+  };
+
+  const handlePrint = () => {
+    window.open(`/order-confirmation?orderNumber=${order.order_number}`, '_blank');
   };
 
   return (
@@ -128,9 +155,19 @@ function OrderDetailDrawer({ order, onClose, onStatusUpdate }: {
             <p className="text-xs text-white/40 font-bold uppercase tracking-wider">Order Details</p>
             <h2 className="text-lg font-black text-white font-mono">{order.order_number}</h2>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors">
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePrint}
+              title="Print Customer Invoice"
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors"
+            >
+              <Printer className="h-3.5 w-3.5 text-[#4ade80]" />
+              Invoice
+            </button>
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="p-6 space-y-6">
@@ -166,7 +203,7 @@ function OrderDetailDrawer({ order, onClose, onStatusUpdate }: {
                 <button
                   onClick={handleAdvance}
                   disabled={updating}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-[#1e3b26] to-[#2d5a3d] hover:from-[#2d5a3d] hover:to-[#3d7a53] border border-[#4ade80]/20 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-[#1e3b26] to-[#2d5a3d] hover:from-[#2d5a3d] hover:to-[#3d7a53] border border-[#4ade80]/20 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {updating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 text-[#4ade80]" />}
                   Mark as {cfg.next}
@@ -176,7 +213,7 @@ function OrderDetailDrawer({ order, onClose, onStatusUpdate }: {
                 <button
                   onClick={handleCancel}
                   disabled={updating}
-                  className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl text-sm font-bold text-red-400 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl text-sm font-bold text-red-400 transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                 >
                   <Ban className="h-4 w-4" />
                   Cancel
@@ -274,12 +311,63 @@ export default function AdminDashboardPage() {
   const { user, logout, initialize, isInitialized } = useAuth();
   const { orders, isLoading, notificationCount, fetchOrders, updateOrderStatus, subscribeRealtime, unsubscribeRealtime, clearNotifications, getMetrics } = useAdminOrders();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'coupons'>('overview');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [realtimeAlert, setRealtimeAlert] = useState<Order | null>(null);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+
+  // Products state
+  const [productsList, setProductsList] = useState<Product[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    category_id: mockCategories[0]?.id || '',
+    price: 350,
+    original_price: 450,
+    weight: '500ml',
+    stock: 50,
+    description: '',
+    image_url: 'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=600&auto=format&fit=crop&q=80',
+    is_featured: false,
+  });
+
+  // Coupons state
+  const [coupons, setCoupons] = useState<Coupon[]>([
+    { code: 'RAINBOW10', type: 'percent', value: 10, minOrder: 500, isActive: true },
+    { code: 'FIRSTBUY', type: 'flat', value: 50, minOrder: 300, isActive: true },
+    { code: 'ORGANIC20', type: 'percent', value: 20, minOrder: 1500, isActive: true },
+  ]);
+  const [isAddCouponOpen, setIsAddCouponOpen] = useState(false);
+  const [newCoupon, setNewCoupon] = useState<Coupon>({
+    code: '',
+    type: 'percent',
+    value: 10,
+    minOrder: 500,
+    isActive: true,
+  });
+
+  // Load products & coupons from localStorage or fallback
+  useEffect(() => {
+    try {
+      const storedProds = localStorage.getItem('rainbow_custom_products');
+      if (storedProds) {
+        setProductsList(JSON.parse(storedProds));
+      } else {
+        setProductsList(mockProducts.slice(0, 30));
+      }
+
+      const storedCoupons = localStorage.getItem('rainbow_active_coupons');
+      if (storedCoupons) {
+        setCoupons(JSON.parse(storedCoupons));
+      }
+    } catch (e) {
+      setProductsList(mockProducts.slice(0, 30));
+    }
+  }, []);
 
   // Auth guard
   useEffect(() => {
@@ -322,6 +410,120 @@ export default function AdminDashboardPage() {
 
   const metrics = getMetrics();
 
+  // CSV Export
+  const handleExportCSV = () => {
+    const headers = ['Order Number', 'Date', 'Customer Name', 'Email', 'Phone', 'City', 'Status', 'Payment Method', 'Subtotal', 'Shipping', 'Discount', 'Total'];
+    const rows = orders.map(o => [
+      o.order_number,
+      new Date(o.created_at).toISOString().split('T')[0],
+      `"${(o.customer_name || '').replace(/"/g, '""')}"`,
+      o.customer_email || '',
+      o.customer_phone || '',
+      `"${(o.shipping_city || '').replace(/"/g, '""')}"`,
+      o.status,
+      o.payment_method,
+      o.subtotal,
+      o.shipping_cost,
+      o.discount_amount,
+      o.total_amount
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `rainbow_orders_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Product Add Handler
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProduct.name.trim()) return;
+
+    const id = 'prod-' + Date.now();
+    const slug = newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const product: Product = {
+      id,
+      slug,
+      name: newProduct.name,
+      category_id: newProduct.category_id,
+      price: Number(newProduct.price),
+      original_price: Number(newProduct.original_price),
+      weight: newProduct.weight,
+      stock: Number(newProduct.stock),
+      description: newProduct.description || 'Pure traditional organic harvest.',
+      image_url: newProduct.image_url,
+      is_featured: newProduct.is_featured,
+      created_at: new Date().toISOString(),
+    };
+
+    const updated = [product, ...productsList];
+    setProductsList(updated);
+    try {
+      localStorage.setItem('rainbow_custom_products', JSON.stringify(updated));
+    } catch (err) {}
+    setIsAddProductOpen(false);
+    setNewProduct({
+      name: '',
+      category_id: mockCategories[0]?.id || '',
+      price: 350,
+      original_price: 450,
+      weight: '500ml',
+      stock: 50,
+      description: '',
+      image_url: 'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=600&auto=format&fit=crop&q=80',
+      is_featured: false,
+    });
+  };
+
+  // Delete product
+  const handleDeleteProduct = (id: string) => {
+    if (confirm('Are you sure you want to remove this product?')) {
+      const updated = productsList.filter(p => p.id !== id);
+      setProductsList(updated);
+      try {
+        localStorage.setItem('rainbow_custom_products', JSON.stringify(updated));
+      } catch (err) {}
+    }
+  };
+
+  // Quick Stock Update
+  const handleUpdateStock = (id: string, delta: number) => {
+    const updated = productsList.map(p => {
+      if (p.id === id) {
+        return { ...p, stock: Math.max(0, p.stock + delta) };
+      }
+      return p;
+    });
+    setProductsList(updated);
+    try {
+      localStorage.setItem('rainbow_custom_products', JSON.stringify(updated));
+    } catch (err) {}
+  };
+
+  // Coupon Add
+  const handleAddCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCoupon.code.trim()) return;
+    const updated = [...coupons, { ...newCoupon, code: newCoupon.code.toUpperCase().trim() }];
+    setCoupons(updated);
+    try {
+      localStorage.setItem('rainbow_active_coupons', JSON.stringify(updated));
+    } catch (err) {}
+    setIsAddCouponOpen(false);
+    setNewCoupon({ code: '', type: 'percent', value: 10, minOrder: 500, isActive: true });
+  };
+
+  const handleToggleCoupon = (code: string) => {
+    const updated = coupons.map(c => c.code === code ? { ...c, isActive: !c.isActive } : c);
+    setCoupons(updated);
+    try {
+      localStorage.setItem('rainbow_active_coupons', JSON.stringify(updated));
+    } catch (err) {}
+  };
+
   const filteredOrders = orders.filter(o => {
     const matchSearch = !searchTerm ||
       o.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -329,6 +531,12 @@ export default function AdminDashboardPage() {
       o.customer_email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatus = statusFilter === 'All' || o.status === statusFilter;
     return matchSearch && matchStatus;
+  });
+
+  const filteredProducts = productsList.filter(p => {
+    const matchSearch = !productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase());
+    const matchCat = categoryFilter === 'All' || p.category_id === categoryFilter;
+    return matchSearch && matchCat;
   });
 
   if (!user?.isAdmin) {
@@ -354,29 +562,45 @@ export default function AdminDashboardPage() {
             </span>
           </div>
 
-          {/* Tabs */}
-          <nav className="flex items-center gap-1 bg-white/5 rounded-xl p-1">
-            {[{ id: 'overview', label: 'Overview', icon: LayoutDashboard }, { id: 'orders', label: 'Orders', icon: ShoppingBag }].map(tab => (
+          {/* Navigation Tabs */}
+          <nav className="flex items-center gap-1 bg-white/5 rounded-xl p-1 overflow-x-auto">
+            {[
+              { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+              { id: 'orders', label: 'Orders', icon: ShoppingBag },
+              { id: 'products', label: 'Products', icon: Package },
+              { id: 'coupons', label: 'Discounts', icon: Tag },
+            ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
                   activeTab === tab.id ? 'bg-[#1e3b26] text-[#4ade80] shadow-sm' : 'text-white/40 hover:text-white/70'
                 }`}
               >
                 <tab.icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:block">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </nav>
 
-          {/* Right */}
+          {/* Right Action Icons */}
           <div className="flex items-center gap-2">
+            {/* Store Link */}
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white/50 hover:text-white transition-colors"
+            >
+              <span>Live Store</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+
             {/* Notification Bell */}
             <div className="relative">
               <button
                 onClick={() => { setShowNotifPanel(!showNotifPanel); clearNotifications(); }}
-                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors relative"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors relative cursor-pointer"
               >
                 <Bell className="h-4 w-4" />
                 {notificationCount > 0 && (
@@ -410,20 +634,14 @@ export default function AdminDashboardPage() {
               </AnimatePresence>
             </div>
 
-            {/* User */}
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:flex flex-col items-end">
-                <p className="text-xs font-bold text-white leading-tight">{user.name}</p>
-                <p className="text-[10px] text-[#4ade80] font-bold">Admin</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 flex items-center justify-center text-white/50 hover:text-red-400 transition-all"
-                title="Sign Out"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </div>
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="w-9 h-9 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 flex items-center justify-center text-white/50 hover:text-red-400 transition-all cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </header>
@@ -441,7 +659,7 @@ export default function AdminDashboardPage() {
               <Bell className="h-5 w-5 text-[#4ade80]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-black text-[#4ade80] uppercase tracking-wider">New Order!</p>
+              <p className="text-xs font-black text-[#4ade80] uppercase tracking-wider">New Order Received!</p>
               <p className="text-sm font-bold text-white truncate">{realtimeAlert.order_number}</p>
               <p className="text-xs text-white/50 truncate">{realtimeAlert.customer_name} — {formatCurrency(realtimeAlert.total_amount)}</p>
             </div>
@@ -452,28 +670,27 @@ export default function AdminDashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
+      {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* ── Overview Tab ─────────────────────────────────────────── */}
+        {/* ── OVERVIEW TAB ─────────────────────────────────────────── */}
         {activeTab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
             <div>
               <h1 className="text-2xl font-black text-white">Dashboard <span className="text-[#b08953] font-serif italic font-normal">Overview</span></h1>
-              <p className="text-sm text-white/30 mt-1">Welcome back, {user.name}. Here's what's happening today.</p>
+              <p className="text-sm text-white/30 mt-1">Welcome back, {user.name}. Here is Rainbow Enterprises live summary.</p>
             </div>
 
             {/* Metric Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard title="Today's Orders" value={String(metrics.todayOrders)} icon={ShoppingBag} color="bg-blue-500/10 text-blue-400" sub="Orders placed today" />
-              <MetricCard title="Total Revenue" value={formatCurrency(metrics.revenue)} icon={IndianRupee} color="bg-[#b08953]/10 text-[#b08953]" sub="Excluding cancelled" />
-              <MetricCard title="Customers" value={String(metrics.customersCount)} icon={Users} color="bg-purple-500/10 text-purple-400" sub="Unique customers" />
-              <MetricCard title="Products" value={String(metrics.activeProductsCount)} icon={Package} color="bg-green-500/10 text-green-400" sub="Active products" />
+              <MetricCard title="Total Revenue" value={formatCurrency(metrics.revenue)} icon={IndianRupee} color="bg-[#b08953]/10 text-[#b08953]" sub="Realized earnings" />
+              <MetricCard title="Customers" value={String(metrics.customersCount)} icon={Users} color="bg-purple-500/10 text-purple-400" sub="Total buyers" />
+              <MetricCard title="Active Products" value={String(productsList.length)} icon={Package} color="bg-green-500/10 text-green-400" sub="Listed items" />
             </div>
 
-            {/* Order status summary */}
+            {/* Orders by Status */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h2 className="text-sm font-black text-white/50 uppercase tracking-wider mb-4">Orders by Status</h2>
+              <h2 className="text-sm font-black text-white/50 uppercase tracking-wider mb-4">Orders Pipeline Status</h2>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                 {Object.entries(STATUS_CONFIG).map(([status, cfg]) => {
                   const count = orders.filter(o => o.status === status).length;
@@ -487,11 +704,11 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Recent Orders */}
+            {/* Recent Orders List */}
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
               <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
                 <h2 className="text-sm font-black text-white/50 uppercase tracking-wider">Recent Orders</h2>
-                <button onClick={() => setActiveTab('orders')} className="text-xs font-bold text-[#4ade80] hover:underline flex items-center gap-1">
+                <button onClick={() => setActiveTab('orders')} className="text-xs font-bold text-[#4ade80] hover:underline flex items-center gap-1 cursor-pointer">
                   View All <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -524,50 +741,34 @@ export default function AdminDashboardPage() {
                 </div>
               )}
             </div>
-
-            {/* Revenue Trend placeholder */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-5">
-                <TrendingUp className="h-4.5 w-4.5 text-[#4ade80]" />
-                <h2 className="text-sm font-black text-white/50 uppercase tracking-wider">Revenue Trend</h2>
-              </div>
-              <div className="flex items-end gap-1.5 h-28">
-                {[35, 55, 40, 70, 60, 85, 65, 90, 75, 88, 92, 80].map((h, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ scaleY: 0 }}
-                    animate={{ scaleY: 1 }}
-                    transition={{ delay: i * 0.05, duration: 0.4 }}
-                    style={{ height: `${h}%`, transformOrigin: 'bottom' }}
-                    className="flex-1 bg-gradient-to-t from-[#1e3b26] to-[#4ade80]/20 rounded-t-md"
-                  />
-                ))}
-              </div>
-              <div className="flex justify-between mt-2">
-                {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => (
-                  <span key={m} className="text-[9px] text-white/20 font-bold">{m}</span>
-                ))}
-              </div>
-            </div>
           </motion.div>
         )}
 
-        {/* ── Orders Tab ───────────────────────────────────────────── */}
+        {/* ── ORDERS TAB ───────────────────────────────────────────── */}
         {activeTab === 'orders' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-black text-white">All <span className="text-[#b08953] font-serif italic font-normal">Orders</span></h1>
-                <p className="text-sm text-white/30 mt-0.5">{filteredOrders.length} of {orders.length} orders</p>
+                <h1 className="text-2xl font-black text-white">Order <span className="text-[#b08953] font-serif italic font-normal">Fulfillment</span></h1>
+                <p className="text-sm text-white/30 mt-0.5">{filteredOrders.length} of {orders.length} orders shown</p>
               </div>
-              <button
-                onClick={fetchOrders}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white/50 hover:text-white transition-all"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-[#1e3b26] hover:bg-[#274c32] border border-[#4ade80]/30 rounded-xl text-xs font-bold text-[#4ade80] transition-colors cursor-pointer"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export CSV
+                </button>
+                <button
+                  onClick={fetchOrders}
+                  disabled={isLoading}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold text-white/60 hover:text-white transition-all cursor-pointer"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
+              </div>
             </div>
 
             {/* Filters */}
@@ -576,10 +777,10 @@ export default function AdminDashboardPage() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
                 <input
                   type="text"
-                  placeholder="Search orders, customers…"
+                  placeholder="Search order ID, customer name, email..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-[#4ade80]/30 focus:border-[#4ade80]/30 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-[#4ade80]/30"
                 />
               </div>
               <div className="flex gap-2 flex-wrap">
@@ -587,7 +788,7 @@ export default function AdminDashboardPage() {
                   <button
                     key={s}
                     onClick={() => setStatusFilter(s)}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                    className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       statusFilter === s
                         ? 'bg-[#1e3b26] border-[#4ade80]/30 text-[#4ade80]'
                         : 'bg-white/5 border-white/10 text-white/40 hover:text-white/70'
@@ -600,7 +801,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Orders Table */}
+            {/* Table */}
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
               {isLoading ? (
                 <div className="flex items-center justify-center py-20">
@@ -610,11 +811,9 @@ export default function AdminDashboardPage() {
                 <div className="flex flex-col items-center justify-center py-20 text-white/20">
                   <ShoppingBag className="h-12 w-12 mb-4 opacity-30" />
                   <p className="font-bold text-lg">No orders found</p>
-                  <p className="text-sm mt-1">Try adjusting your search or filters</p>
                 </div>
               ) : (
                 <>
-                  {/* Table Header */}
                   <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 border-b border-white/10 text-[10px] font-black text-white/30 uppercase tracking-wider">
                     <div className="col-span-2">Order</div>
                     <div className="col-span-3">Customer</div>
@@ -624,7 +823,6 @@ export default function AdminDashboardPage() {
                     <div className="col-span-1" />
                   </div>
 
-                  {/* Rows */}
                   <div className="divide-y divide-white/5">
                     {filteredOrders.map(order => (
                       <motion.div
@@ -647,11 +845,11 @@ export default function AdminDashboardPage() {
                         <div className="col-span-1 md:col-span-2">
                           <StatusBadge status={order.status} />
                         </div>
-                        <div className="col-span-1 md:col-span-2 text-right md:text-right">
+                        <div className="col-span-1 md:col-span-2 text-right">
                           <p className="font-bold text-[#b08953] text-sm">{formatCurrency(order.total_amount)}</p>
                         </div>
                         <div className="hidden md:flex col-span-1 justify-end">
-                          <Eye className="h-4 w-4 text-white/20 group-hover:text-white/50" />
+                          <Eye className="h-4 w-4 text-white/20" />
                         </div>
                       </motion.div>
                     ))}
@@ -659,6 +857,407 @@ export default function AdminDashboardPage() {
                 </>
               )}
             </div>
+          </motion.div>
+        )}
+
+        {/* ── PRODUCTS TAB ─────────────────────────────────────────── */}
+        {activeTab === 'products' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-black text-white">Product <span className="text-[#b08953] font-serif italic font-normal">Catalog</span></h1>
+                <p className="text-sm text-white/30 mt-0.5">Manage stock levels, pricing, and new inventory listings</p>
+              </div>
+              <Button
+                onClick={() => setIsAddProductOpen(true)}
+                className="bg-[#1e3b26] hover:bg-[#274c32] text-[#4ade80] border border-[#4ade80]/30 font-bold px-4 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                Add Product
+              </Button>
+            </div>
+
+            {/* Search and Category Filter */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                <input
+                  type="text"
+                  placeholder="Search products by title..."
+                  value={productSearch}
+                  onChange={e => setProductSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-[#4ade80]/30"
+                />
+              </div>
+
+              <select
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+                className="px-4 py-2.5 bg-[#0d1f13] border border-white/10 rounded-xl text-xs font-bold text-white focus:outline-none"
+              >
+                <option value="All">All Categories</option>
+                {mockCategories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Products Table */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 border-b border-white/10 text-[10px] font-black text-white/30 uppercase tracking-wider">
+                <div className="col-span-5">Product</div>
+                <div className="col-span-2">Weight / Variant</div>
+                <div className="col-span-2">Price</div>
+                <div className="col-span-2">Stock Level</div>
+                <div className="col-span-1 text-right">Action</div>
+              </div>
+
+              <div className="divide-y divide-white/5">
+                {filteredProducts.map(p => {
+                  const isOutOfStock = p.stock <= 0;
+                  const isLowStock = p.stock > 0 && p.stock <= 10;
+
+                  return (
+                    <div key={p.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 px-6 py-4 items-center hover:bg-white/[0.02]">
+                      <div className="col-span-1 md:col-span-5 flex items-center gap-3">
+                        <div className="relative w-12 h-12 rounded-xl bg-white/5 border border-white/10 overflow-hidden flex-shrink-0">
+                          <Image src={p.image_url} alt={p.name} fill className="object-cover" sizes="48px" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-white truncate">{p.name}</p>
+                          <p className="text-[10px] text-white/30 font-mono">SKU: {p.id.slice(0, 10)}</p>
+                        </div>
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2 text-xs text-white/70 font-mono">
+                        {p.weight}
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2">
+                        <span className="font-bold text-sm text-[#b08953] font-mono">₹{p.price}</span>
+                        {p.original_price && (
+                          <span className="text-[10px] text-white/30 line-through ml-2">₹{p.original_price}</span>
+                        )}
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2 flex items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          isOutOfStock
+                            ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                            : isLowStock
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            : 'bg-green-500/10 text-green-400 border-green-500/20'
+                        }`}>
+                          {p.stock} in stock
+                        </span>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleUpdateStock(p.id, -5)}
+                            className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white text-xs flex items-center justify-center font-bold"
+                            title="Reduce by 5"
+                          >
+                            -
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStock(p.id, 10)}
+                            className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 text-white text-xs flex items-center justify-center font-bold"
+                            title="Add 10"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="col-span-1 text-right">
+                        <button
+                          onClick={() => handleDeleteProduct(p.id)}
+                          className="text-white/30 hover:text-red-400 p-1.5 transition-colors cursor-pointer"
+                          title="Delete product"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Add Product Modal */}
+            <AnimatePresence>
+              {isAddProductOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-[#0d1f13] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl"
+                  >
+                    <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                      <h3 className="text-lg font-black text-white">Add New Organic Product</h3>
+                      <button onClick={() => setIsAddProductOpen(false)} className="text-white/40 hover:text-white">
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleAddProduct} className="space-y-4 text-xs">
+                      <div className="space-y-1">
+                        <label className="font-bold text-white/50 uppercase">Product Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={newProduct.name}
+                          onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
+                          placeholder="e.g. Cold Pressed Groundnut Oil"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="font-bold text-white/50 uppercase">Category</label>
+                          <select
+                            value={newProduct.category_id}
+                            onChange={e => setNewProduct({ ...newProduct, category_id: e.target.value })}
+                            className="w-full px-3 py-2 bg-[#0d1f13] border border-white/10 rounded-xl text-white text-sm"
+                          >
+                            {mockCategories.map(cat => (
+                              <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="font-bold text-white/50 uppercase">Weight / Pack</label>
+                          <input
+                            type="text"
+                            required
+                            value={newProduct.weight}
+                            onChange={e => setNewProduct({ ...newProduct, weight: e.target.value })}
+                            placeholder="e.g. 1000ml or 500g"
+                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <label className="font-bold text-white/50 uppercase">Price (₹)</label>
+                          <input
+                            type="number"
+                            required
+                            value={newProduct.price}
+                            onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="font-bold text-white/50 uppercase">Original (₹)</label>
+                          <input
+                            type="number"
+                            value={newProduct.original_price}
+                            onChange={e => setNewProduct({ ...newProduct, original_price: Number(e.target.value) })}
+                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="font-bold text-white/50 uppercase">Stock Count</label>
+                          <input
+                            type="number"
+                            required
+                            value={newProduct.stock}
+                            onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
+                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-white/50 uppercase">Image URL</label>
+                        <input
+                          type="text"
+                          value={newProduct.image_url}
+                          onChange={e => setNewProduct({ ...newProduct, image_url: e.target.value })}
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-white/50 uppercase">Description</label>
+                        <textarea
+                          rows={2}
+                          value={newProduct.description}
+                          onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
+                          placeholder="Traditional extraction process and organic health benefits..."
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                        />
+                      </div>
+
+                      <div className="pt-2 flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddProductOpen(false)}
+                          className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold"
+                        >
+                          Cancel
+                        </button>
+                        <Button
+                          type="submit"
+                          className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-6 py-2 rounded-xl"
+                        >
+                          Save Product
+                        </Button>
+                      </div>
+                    </form>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* ── COUPONS TAB ─────────────────────────────────────────── */}
+        {activeTab === 'coupons' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-black text-white">Discounts & <span className="text-[#b08953] font-serif italic font-normal">Coupons</span></h1>
+                <p className="text-sm text-white/30 mt-0.5">Manage customer promotional vouchers and minimum cart rules</p>
+              </div>
+              <Button
+                onClick={() => setIsAddCouponOpen(true)}
+                className="bg-[#1e3b26] hover:bg-[#274c32] text-[#4ade80] border border-[#4ade80]/30 font-bold px-4 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                Create Coupon
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {coupons.map(coupon => (
+                <div key={coupon.code} className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4 relative overflow-hidden">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">PROMO CODE</span>
+                      <h3 className="text-xl font-black font-mono text-[#4ade80] tracking-wider">{coupon.code}</h3>
+                    </div>
+                    <button
+                      onClick={() => handleToggleCoupon(coupon.code)}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                        coupon.isActive
+                          ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                          : 'bg-red-500/20 text-red-400 border-red-500/30'
+                      }`}
+                    >
+                      {coupon.isActive ? 'Active' : 'Disabled'}
+                    </button>
+                  </div>
+
+                  <div className="space-y-1 text-xs text-white/70">
+                    <p className="flex justify-between">
+                      <span className="text-white/40">Discount:</span>
+                      <span className="font-bold text-white">
+                        {coupon.type === 'percent' ? `${coupon.value}% Off` : `₹${coupon.value} Off`}
+                      </span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="text-white/40">Min Cart Value:</span>
+                      <span className="font-bold text-white">₹{coupon.minOrder}</span>
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Coupon Modal */}
+            <AnimatePresence>
+              {isAddCouponOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-[#0d1f13] border border-white/10 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-5 shadow-2xl"
+                  >
+                    <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                      <h3 className="text-lg font-black text-white">Create New Coupon</h3>
+                      <button onClick={() => setIsAddCouponOpen(false)} className="text-white/40 hover:text-white">
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleAddCoupon} className="space-y-4 text-xs">
+                      <div className="space-y-1">
+                        <label className="font-bold text-white/50 uppercase">Coupon Code</label>
+                        <input
+                          type="text"
+                          required
+                          value={newCoupon.code}
+                          onChange={e => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                          placeholder="e.g. FESTIVAL15"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm uppercase font-mono"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="font-bold text-white/50 uppercase">Discount Type</label>
+                          <select
+                            value={newCoupon.type}
+                            onChange={e => setNewCoupon({ ...newCoupon, type: e.target.value as 'percent' | 'flat' })}
+                            className="w-full px-3 py-2 bg-[#0d1f13] border border-white/10 rounded-xl text-white text-sm"
+                          >
+                            <option value="percent">Percentage (%)</option>
+                            <option value="flat">Flat Amount (₹)</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="font-bold text-white/50 uppercase">Discount Value</label>
+                          <input
+                            type="number"
+                            required
+                            value={newCoupon.value}
+                            onChange={e => setNewCoupon({ ...newCoupon, value: Number(e.target.value) })}
+                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-white/50 uppercase">Min Cart Value (₹)</label>
+                        <input
+                          type="number"
+                          required
+                          value={newCoupon.minOrder}
+                          onChange={e => setNewCoupon({ ...newCoupon, minOrder: Number(e.target.value) })}
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                        />
+                      </div>
+
+                      <div className="pt-2 flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddCouponOpen(false)}
+                          className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold"
+                        >
+                          Cancel
+                        </button>
+                        <Button
+                          type="submit"
+                          className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-6 py-2 rounded-xl"
+                        >
+                          Save Coupon
+                        </Button>
+                      </div>
+                    </form>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </main>

@@ -239,10 +239,20 @@ export default function CheckoutPage() {
           </p>
         </div>
 
-        <div className="flex justify-center gap-4">
-          <Link href="/shop">
-            <Button className="bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-8 py-6 rounded-xl">
-              Continue Shopping
+        <div className="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto">
+          <Link href={`/order-confirmation?orderNumber=${orderId}`} className="flex-1">
+            <Button variant="outline" className="w-full border-primary/30 text-primary hover:bg-primary/5 font-bold py-6 rounded-xl">
+              View Receipt
+            </Button>
+          </Link>
+          <Link href="/track-order" className="flex-1">
+            <Button variant="outline" className="w-full border-border hover:bg-muted font-bold py-6 rounded-xl">
+              Track Order
+            </Button>
+          </Link>
+          <Link href="/shop" className="flex-1">
+            <Button className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-bold py-6 rounded-xl shadow-md">
+              Continue
             </Button>
           </Link>
         </div>
