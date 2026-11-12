@@ -47,16 +47,16 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
       ? [activeVariant.image_url]
       : [];
 
-  // When hovering on product card: switch images every 5 seconds (5000ms)
+  // When hovering on product card: switch images every 3 seconds (3000ms)
   useEffect(() => {
     if (isHovering && displayImages.length > 1) {
       // Advance to second image right on hover if starting on first
       setHoveredImageIndex((prev) => (prev === 0 ? 1 : prev));
 
-      // Calm, elegant 5-second slideshow interval
+      // Smooth 3-second slideshow interval
       intervalRef.current = setInterval(() => {
         setHoveredImageIndex((prev) => (prev + 1) % displayImages.length);
-      }, 5000);
+      }, 3000);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
