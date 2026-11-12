@@ -52,6 +52,34 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </Button>
             </div>
 
+            {/* Modern Free Shipping Progress Meter */}
+            {items.length > 0 && (
+              <div className="bg-muted/40 px-6 py-3.5 border-b border-border/80 select-none">
+                <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+                  {subtotal >= shippingThreshold ? (
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                      🎉 You unlocked FREE Pan-India Delivery!
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      🚚 Add <strong className="text-primary font-bold">₹{(shippingThreshold - subtotal).toFixed(0)}</strong> more for <strong className="text-foreground">FREE Delivery</strong>
+                    </span>
+                  )}
+                  <span className="text-[11px] font-bold text-muted-foreground">
+                    {Math.min(100, Math.round((subtotal / shippingThreshold) * 100))}%
+                  </span>
+                </div>
+                <div className="w-full bg-border/80 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 rounded-full ${
+                      subtotal >= shippingThreshold ? 'bg-emerald-500' : 'bg-primary'
+                    }`}
+                    style={{ width: `${Math.min(100, (subtotal / shippingThreshold) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Items List */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {items.length === 0 ? (

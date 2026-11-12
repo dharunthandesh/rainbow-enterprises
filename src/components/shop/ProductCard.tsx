@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Star, ShoppingCart, Leaf } from 'lucide-react';
+import { Star, ShoppingCart, Leaf, Check } from 'lucide-react';
 import { Product } from '@/lib/supabase';
 import { useCart } from '@/store/useCart';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +27,9 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
 
   const [activeVariant, setActiveVariant] = useState<Product>(product);
   const [isHovering, setIsHovering] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
+  const [isAdded, setIsAdded] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Sync state with prop product changes during render
   const [prevProductId, setPrevProductId] = useState(product.id);
@@ -35,17 +37,48 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
     setPrevProductId(product.id);
     const matchingVariant = allVariants.find(v => v.id === product.id) || allVariants[0] || product;
     setActiveVariant(matchingVariant);
-    setSelectedImageIndex(null);
+    setHoveredImageIndex(0);
   }
 
-  // Reset selected image when active variant changes
+  // Determine which images to display
+  const displayImages = activeVariant.images && activeVariant.images.length > 0
+    ? activeVariant.images
+    : activeVariant.image_url
+      ? [activeVariant.image_url]
+      : [];
+
+  // When hovering on product card: switch images every 5 seconds (5000ms)
   useEffect(() => {
-    setSelectedImageIndex(null);
-  }, [activeVariant]);
+    if (isHovering && displayImages.length > 1) {
+      // Advance to second image right on hover if starting on first
+      setHoveredImageIndex((prev) => (prev === 0 ? 1 : prev));
+
+      // Calm, elegant 5-second slideshow interval
+      intervalRef.current = setInterval(() => {
+        setHoveredImageIndex((prev) => (prev + 1) % displayImages.length);
+      }, 5000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setHoveredImageIndex(0);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isHovering, displayImages.length]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to detail page
+    e.preventDefault();
+    e.stopPropagation();
     addItem(activeVariant);
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 1600);
     toast({
       title: 'Added to Cart',
       description: `${activeVariant.name} (${activeVariant.weight}) has been added.`,
@@ -55,65 +88,63 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
   const discount = activeVariant.original_price
     ? Math.round(((activeVariant.original_price - activeVariant.price) / activeVariant.original_price) * 100)
     : 0;
+  const savings = activeVariant.original_price
+    ? activeVariant.original_price - activeVariant.price
+    : 0;
 
-  // Determine which image to display
-  const displayImages = activeVariant.images && activeVariant.images.length > 0
-    ? activeVariant.images
-    : activeVariant.image_url
-      ? [activeVariant.image_url]
-      : [];
-  
-  // Smoothly show secondary image on hover, or primary image by default (no flashing interval timer)
-  const activeImageIndex = selectedImageIndex !== null
-    ? selectedImageIndex
-    : (isHovering && displayImages.length > 1 ? 1 : 0);
-  const currentImage = displayImages[activeImageIndex] || displayImages[0] || '';
+  const currentImage = displayImages[hoveredImageIndex] || displayImages[0] || '';
 
   return (
-    <div className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col h-full">
-      {/* Discount Badge */}
-      {discount > 0 && (
-        <span className="absolute top-3 left-3 bg-secondary text-secondary-foreground text-xs font-black px-2.5 py-1 rounded-full z-10 shadow-sm">
-          {discount}% OFF
-        </span>
-      )}
+    <div className="group relative bg-card border border-border/80 rounded-2xl overflow-hidden hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full select-none">
+      {/* Top Badges */}
+      <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
+        {discount > 0 ? (
+          <span className="bg-[#cb5127] text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-sm">
+            {discount}% OFF
+          </span>
+        ) : (
+          <span className="bg-primary/90 text-primary-foreground text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-xs shadow-xs">
+            100% Pure
+          </span>
+        )}
 
-      {/* Multi-angle count badge */}
-      {displayImages.length > 1 && (
-        <span className="absolute top-3 right-3 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          {activeImageIndex + 1}/{displayImages.length}
-        </span>
-      )}
+        {/* Multi-angle count badge */}
+        {displayImages.length > 1 && (
+          <span className="bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {hoveredImageIndex + 1}/{displayImages.length}
+          </span>
+        )}
+      </div>
 
       {/* Product Image */}
       {currentImage ? (
         <Link
           href={`/shop/${activeVariant.slug}`}
-          className="relative w-full pt-[100%] bg-muted block overflow-hidden"
+          className="relative w-full pt-[100%] bg-gradient-to-b from-stone-50/50 to-stone-100/50 dark:from-stone-900/20 dark:to-stone-950/20 block overflow-hidden"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => {
             setIsHovering(false);
-            setSelectedImageIndex(null);
+            setHoveredImageIndex(0);
           }}
         >
-          {/* Render all images stacked, show activeImageIndex with smooth crossfade */}
+          {/* Render all images stacked with smooth crossfade */}
           {displayImages.map((img, idx) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={img}
               src={img}
               alt={`${activeVariant.name} - view ${idx + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out ${
-                idx === activeImageIndex
+              className={`absolute inset-0 w-full h-full object-contain p-4 transition-all duration-700 ease-out ${
+                idx === hoveredImageIndex
                   ? 'opacity-100 scale-105'
                   : 'opacity-0 scale-100 pointer-events-none'
               }`}
             />
           ))}
 
-          {/* Dot indicators for multiple images */}
+          {/* Modern Elongated Dash Indicators for 5-second image carousel */}
           {displayImages.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 py-1 px-2 rounded-full bg-black/25 backdrop-blur-xs">
+            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 py-1 px-2.5 rounded-full bg-black/35 backdrop-blur-xs">
               {displayImages.map((_, idx) => (
                 <button
                   type="button"
@@ -121,16 +152,16 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    setSelectedImageIndex(idx);
+                    setHoveredImageIndex(idx);
                   }}
                   onMouseEnter={(e) => {
                     e.stopPropagation();
-                    setSelectedImageIndex(idx);
+                    setHoveredImageIndex(idx);
                   }}
                   aria-label={`View image ${idx + 1}`}
-                  className={`block rounded-full transition-all duration-300 ${
-                    idx === activeImageIndex
-                      ? 'w-4 h-1.5 bg-white shadow-xs'
+                  className={`block rounded-full transition-all duration-500 ${
+                    idx === hoveredImageIndex
+                      ? 'w-5 h-1.5 bg-white shadow-xs'
                       : 'w-1.5 h-1.5 bg-white/60 hover:bg-white'
                   }`}
                 />
@@ -141,7 +172,6 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
       ) : (
         <Link href={`/shop/${activeVariant.slug}`} className="relative w-full pt-[100%] bg-gradient-to-br from-[#1e3b26]/5 to-[#b08953]/10 block overflow-hidden border-b border-border">
           <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center select-none">
-            {/* Elegant organic decoration */}
             <div className="w-14 h-14 rounded-full bg-[#1e3b26]/10 flex items-center justify-center text-[#1e3b26] mb-3 group-hover:scale-110 group-hover:bg-[#1e3b26]/20 transition-all duration-300">
               <Leaf className="h-6 w-6" />
             </div>
@@ -155,28 +185,27 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
         </Link>
       )}
 
-      {/* Info */}
+      {/* Info & Details */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
         <div className="space-y-2">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block">
-            {activeVariant.weight} Pack
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">
+              {activeVariant.weight} Pack
+            </span>
+            <div className="flex items-center gap-1">
+              <div className="flex text-amber-400">
+                <Star className="h-3.5 w-3.5 fill-current" />
+              </div>
+              <span className="text-xs font-bold text-foreground">4.8</span>
+              <span className="text-[10px] text-muted-foreground font-medium">(120+)</span>
+            </div>
+          </div>
+
           <Link href={`/shop/${activeVariant.slug}`}>
-            <h3 className="font-bold text-base sm:text-lg hover:text-primary transition-colors line-clamp-1">
+            <h3 className="font-bold text-base sm:text-[17px] hover:text-primary transition-colors line-clamp-1 leading-snug">
               {activeVariant.name}
             </h3>
           </Link>
-          {/* Rating */}
-          <div className="flex items-center gap-1">
-            <div className="flex text-amber-400">
-              <Star className="h-3.5 w-3.5 fill-current" />
-              <Star className="h-3.5 w-3.5 fill-current" />
-              <Star className="h-3.5 w-3.5 fill-current" />
-              <Star className="h-3.5 w-3.5 fill-current" />
-              <Star className="h-3.5 w-3.5 fill-current text-muted" />
-            </div>
-            <span className="text-xs text-muted-foreground font-semibold">(4.8)</span>
-          </div>
 
           {/* Size / Weight Selector Toggles */}
           {allVariants.length > 1 && (
@@ -188,10 +217,10 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
                     e.preventDefault();
                     setActiveVariant(v);
                   }}
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all ${
+                  className={`text-[10px] font-bold px-2.5 py-0.5 rounded-lg border transition-all ${
                     activeVariant.id === v.id
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm font-extrabold'
-                      : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-extrabold scale-[1.02]'
+                      : 'bg-muted/40 text-muted-foreground border-border hover:bg-muted hover:text-foreground'
                   }`}
                 >
                   {v.weight}
@@ -202,23 +231,45 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
         </div>
 
         {/* Pricing & Cart Button */}
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center justify-between pt-2 border-t border-border/60">
           <div className="flex flex-col">
-            {activeVariant.original_price && (
-              <span className="text-xs text-muted-foreground line-through font-semibold">
-                ₹{activeVariant.original_price.toFixed(2)}
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-primary">
+                ₹{activeVariant.price.toFixed(0)}
+              </span>
+              {activeVariant.original_price && (
+                <span className="text-xs text-muted-foreground line-through font-semibold">
+                  ₹{activeVariant.original_price.toFixed(0)}
+                </span>
+              )}
+            </div>
+            {savings > 0 && (
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                Save ₹{savings.toFixed(0)}
               </span>
             )}
-            <span className="text-lg font-black text-primary">
-              ₹{activeVariant.price.toFixed(2)}
-            </span>
           </div>
+
           <Button
             onClick={handleAddToCart}
-            size="icon"
-            className="bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground rounded-xl transition-all duration-300"
+            size="sm"
+            className={`rounded-xl px-3.5 transition-all duration-300 font-bold flex items-center gap-1.5 ${
+              isAdded
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white scale-105'
+                : 'bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground'
+            }`}
           >
-            <ShoppingCart className="h-4 w-4" />
+            {isAdded ? (
+              <>
+                <Check className="h-4 w-4" />
+                <span className="text-xs">Added</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="h-4 w-4" />
+                <span className="text-xs hidden sm:inline">Add</span>
+              </>
+            )}
           </Button>
         </div>
       </div>
