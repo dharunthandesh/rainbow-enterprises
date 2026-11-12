@@ -8,6 +8,7 @@ import {
 import { getProducts } from '@/lib/mockData';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { StoreMap } from '@/components/ui/StoreMap';
+import { EditorialHero } from '@/components/home/EditorialHero';
 
 export default async function Home() {
   const featuredProducts = await getProducts(undefined, true);
@@ -16,133 +17,10 @@ export default async function Home() {
     <div className="bg-[#f4ece0] min-h-screen overflow-x-hidden">
 
       {/* ═══════════════════════════════════════════════════════════════
-          HERO — Full-viewport, product-first, no central image box
-          Products are each independent floating 3D elements
+          HERO — Editorial Showcase adapted from reference image
+          Featuring top products, rotating badge & shoppable hotspots
       ═══════════════════════════════════════════════════════════════ */}
-      <section
-        className="relative w-full overflow-hidden min-h-[100svh] flex items-center bg-[#f4ece0]"
-      >
-        {/* Background Image with 3D styled animation */}
-        <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden" style={{ perspective: '1200px' }}>
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes float3D {
-              0% {
-                transform: rotateX(1deg) rotateY(-1.5deg) scale(1.03) translateZ(0px);
-              }
-              50% {
-                transform: rotateX(-1.5deg) rotateY(1.5deg) scale(1.06) translateZ(15px);
-              }
-              100% {
-                transform: rotateX(1deg) rotateY(-1.5deg) scale(1.03) translateZ(0px);
-              }
-            }
-          `}} />
-          <Image
-            src="/hero_bg_hq.jpg"
-            alt="RootsVeyr Products Background"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center"
-            style={{
-              animation: 'float3D 18s ease-in-out infinite',
-              transformStyle: 'preserve-3d',
-              backfaceVisibility: 'hidden',
-              willChange: 'transform',
-              imageRendering: 'auto',
-            }}
-            quality={100}
-          />
-        </div>
-        {/* Hero Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-24 md:py-32 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          
-          {/* Left Column: Headline and Badges */}
-          <div className="space-y-8 max-w-xl pr-0 relative lg:-left-[10%] z-20">
-            {/* Headline */}
-            <h1 className="font-brand font-black text-[#1e3b26] leading-[1.08] tracking-tight text-5xl sm:text-6xl md:text-7xl">
-              Tradition<br />
-              You Can<br />
-              Taste.<br />
-              <span className="text-[#b08953]">Purity You<br />Can Trust.</span>
-            </h1>
-
-            {/* Description */}
-            <p className="text-gray-600 font-sans text-sm sm:text-base leading-relaxed max-w-md">
-              Premium traditional food products sourced naturally and delivered by <strong className="text-gray-900 font-semibold">Rainbow Enterprises</strong>.
-            </p>
-
-            {/* CTA */}
-            <div className="pt-2">
-              <Link
-                href="/shop"
-                className="inline-flex items-center gap-2.5 bg-[#1d3824] hover:bg-[#142318] text-white font-bold rounded-full shadow-lg shadow-[#1d3824]/28 hover:shadow-xl transition-all duration-300 px-7 py-3.5 text-sm sm:text-base group"
-              >
-                <ShoppingBag className="w-4.5 h-4.5" />
-                Shop Now
-                <ArrowRight className="group-hover:translate-x-1 transition-transform w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Right Column: Stacked Info Cards */}
-          <div className="flex flex-col gap-5 w-full max-w-[330px] mx-auto lg:ml-auto lg:mr-0 relative lg:-top-48 lg:-right-[22%] z-20">
-            {/* Video / Tradition Card */}
-            <div className="bg-[#f0e6d3] border border-[#d9c9b0] shadow-lg rounded-[1.75rem] p-4 flex items-center gap-4 w-full">
-              <div className="relative flex-shrink-0 rounded-xl overflow-hidden w-20 h-14 bg-amber-50">
-                <Image
-                  src="/preserve_tradition.png"
-                  alt="Cold pressing tradition"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-md">
-                    <Play className="w-2.5 h-2.5 fill-[#1d3824] text-[#1d3824] ml-0.5" />
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-0.5">
-                <h3 className="font-brand font-black text-sm text-[#1e3b26] leading-tight">
-                  How We Preserve Tradition
-                </h3>
-                <p className="text-[10px] text-gray-500 leading-snug">
-                  Watch our cold-pressing process.
-                </p>
-                <Link
-                  href="/about"
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-[#b08953] hover:text-[#946e3a] transition-colors pt-0.5"
-                >
-                  Watch Now <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Customer Rating Card */}
-            <div className="bg-[#f0e6d3] border border-[#d9c9b0] shadow-lg rounded-[1.75rem] p-5 w-full space-y-2.5">
-              <div className="w-8 h-8 rounded-full bg-[#1d3824] flex items-center justify-center">
-                <Star className="w-3.5 h-3.5 fill-white text-white" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="font-brand font-black text-2xl text-[#1e3b26] leading-none">
-                  4.8<span className="text-lg font-normal text-gray-400">/5</span>
-                </div>
-                <h4 className="font-bold text-[#1e3b26] text-xs mt-0.5">Customer Rating</h4>
-                <p className="text-[10px] text-gray-500 leading-relaxed">
-                  Trusted by thousands of happy customers.
-                </p>
-              </div>
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-1 text-[10px] font-bold text-[#b08953] hover:text-[#946e3a] transition-colors"
-              >
-                Read Reviews <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* ── End Hero ── */}
+      <EditorialHero />
 
       {/* ═══════════════ TRUST STRIP ═══════════════ */}
       <div className="bg-[#1d3824]">
@@ -182,7 +60,7 @@ export default async function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
               { title: 'Cold Pressed\nOils', sub: '12 products', img: '/products/RAINBOW ENTERPRISES/1. Cold Pressed Oils/Groundnut_Oil_1.png', href: '/shop?category=oils-ghee', bg: 'bg-amber-50' },
-              { title: 'Millets &\nGrains', sub: '8 products', img: '/cat_millets.png', href: '/shop?category=millets-pulses', bg: 'bg-green-50' },
+              { title: 'Millets &\nGrains', sub: '8 products', img: '/products/RAINBOW ENTERPRISES/13. Millets & Pulses/FOXTAIL-MILLET-300x300.jpg', href: '/shop?category=millets-pulses', bg: 'bg-green-50' },
               { title: 'Pure Honey', sub: '6 varieties', img: '/products/RAINBOW ENTERPRISES/3. Honeys/CAVE_HONEY_1.jpg', href: '/shop?category=honey-sweeteners', bg: 'bg-orange-50' },
               { title: 'Desi Ghee', sub: '4 products', img: '/products/RAINBOW ENTERPRISES/2. Ghees/COW GHEE_1.png', href: '/shop?category=oils-ghee', bg: 'bg-yellow-50' },
               { title: 'Traditional\nFoods', sub: '15+ items', img: '/products/RAINBOW ENTERPRISES/5. Cookies/MULTIGRAIN_COOKIES.JPG', href: '/shop?category=snacks-nuts', bg: 'bg-stone-50' },

@@ -45,6 +45,7 @@
   --font-outfit: 'Plus Jakarta Sans';
   --font-playfair: 'Playfair Display';
   --font-elegant: 'Cormorant Garamond';
+  --font-script: 'Alex Brush';
 }
 
 .dark {
@@ -110,6 +111,7 @@
   --font-display: var(--font-outfit), sans-serif;
   --font-brand: var(--font-playfair), 'Georgia', serif;
   --font-serif-elegant: var(--font-elegant), 'Georgia', serif;
+  --font-script: var(--font-script), cursive;
 }
 
 @layer base {

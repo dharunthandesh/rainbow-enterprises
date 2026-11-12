@@ -26,9 +26,8 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
     : [product];
 
   const [activeVariant, setActiveVariant] = useState<Product>(product);
-  const [hoveredImageIndex, setHoveredImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   // Sync state with prop product changes during render
   const [prevProductId, setPrevProductId] = useState(product.id);
@@ -36,31 +35,12 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
     setPrevProductId(product.id);
     const matchingVariant = allVariants.find(v => v.id === product.id) || allVariants[0] || product;
     setActiveVariant(matchingVariant);
+    setSelectedImageIndex(null);
   }
 
-  // Cycle through images on hover
+  // Reset selected image when active variant changes
   useEffect(() => {
-    const images = activeVariant.images;
-    if (isHovering && images && images.length > 1) {
-      intervalRef.current = setInterval(() => {
-        setHoveredImageIndex(prev => (prev + 1) % images.length);
-      }, 800);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      setTimeout(() => {
-        setHoveredImageIndex(0);
-      }, 0);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isHovering, activeVariant]);
-
-  // Reset image index when variant changes
-  useEffect(() => {
-    setTimeout(() => {
-      setHoveredImageIndex(0);
-    }, 0);
+    setSelectedImageIndex(null);
   }, [activeVariant]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -82,7 +62,12 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
     : activeVariant.image_url
       ? [activeVariant.image_url]
       : [];
-  const currentImage = displayImages[hoveredImageIndex] || displayImages[0] || '';
+  
+  // Smoothly show secondary image on hover, or primary image by default (no flashing interval timer)
+  const activeImageIndex = selectedImageIndex !== null
+    ? selectedImageIndex
+    : (isHovering && displayImages.length > 1 ? 1 : 0);
+  const currentImage = displayImages[activeImageIndex] || displayImages[0] || '';
 
   return (
     <div className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col h-full">
@@ -95,8 +80,8 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
 
       {/* Multi-angle count badge */}
       {displayImages.length > 1 && (
-        <span className="absolute top-3 right-3 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          {hoveredImageIndex + 1}/{displayImages.length}
+        <span className="absolute top-3 right-3 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          {activeImageIndex + 1}/{displayImages.length}
         </span>
       )}
 
@@ -106,33 +91,47 @@ export function ProductCard({ product, variants = [] }: ProductCardProps) {
           href={`/shop/${activeVariant.slug}`}
           className="relative w-full pt-[100%] bg-muted block overflow-hidden"
           onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
+          onMouseLeave={() => {
+            setIsHovering(false);
+            setSelectedImageIndex(null);
+          }}
         >
-          {/* Render all images stacked, show only currentImage */}
+          {/* Render all images stacked, show activeImageIndex with smooth crossfade */}
           {displayImages.map((img, idx) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={img}
               src={img}
               alt={`${activeVariant.name} - view ${idx + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
-                idx === hoveredImageIndex
+              className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out ${
+                idx === activeImageIndex
                   ? 'opacity-100 scale-105'
-                  : 'opacity-0 scale-100'
+                  : 'opacity-0 scale-100 pointer-events-none'
               }`}
             />
           ))}
 
           {/* Dot indicators for multiple images */}
           {displayImages.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 py-1 px-2 rounded-full bg-black/25 backdrop-blur-xs">
               {displayImages.map((_, idx) => (
-                <span
+                <button
+                  type="button"
                   key={idx}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedImageIndex(idx);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.stopPropagation();
+                    setSelectedImageIndex(idx);
+                  }}
+                  aria-label={`View image ${idx + 1}`}
                   className={`block rounded-full transition-all duration-300 ${
-                    idx === hoveredImageIndex
-                      ? 'w-4 h-1.5 bg-white'
-                      : 'w-1.5 h-1.5 bg-white/50'
+                    idx === activeImageIndex
+                      ? 'w-4 h-1.5 bg-white shadow-xs'
+                      : 'w-1.5 h-1.5 bg-white/60 hover:bg-white'
                   }`}
                 />
               ))}
